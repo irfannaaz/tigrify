@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tiger</title>
+  <meta name="description" content="Tiger converts images, PDFs, subtitles and data files right on your computer. Nothing is uploaded.">
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="assets/icon-192.png">
+  <meta name="theme-color" content="#ff7a1a">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Tiger">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <img src="assets/logo.svg" alt="" width="40" height="40">
+      <div>
+        <h1>Tiger</h1>
+        <p>Drop files. Pick an output. Done — nothing leaves your computer.</p>
+      </div>
+    </div>
+    <div class="top-actions">
+      <label class="switch"><input type="checkbox" id="wheelPref" checked> Quick wheel on drop</label>
+      <button class="ghost" id="themeBtn" title="Switch light / dark">◐</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="panel files" aria-labelledby="filesTitle">
+      <div class="panel-head">
+        <h2 id="filesTitle">Files <span class="count" id="fileCount">0</span></h2>
+        <div class="row">
+          <button class="ghost" id="wheelBtn" disabled title="Open the quick wheel (Space)">◎ Wheel</button>
+          <button class="ghost" id="clearBtn" disabled>Clear</button>
+        </div>
+      </div>
+      <label class="drop" id="drop" tabindex="0">
+        <input type="file" id="picker" multiple hidden>
+        <span class="drop-icon" aria-hidden="true">⬇</span>
+        <strong>Drop files anywhere</strong>
+        <span>or tap here to choose · PDF, images, video, audio, SRT/VTT, CSV/JSON, ZIP, anything</span>
+      </label>
+      <button class="ghost camera" id="cameraBtn" type="button">📷 Scan with camera</button>
+      <input type="file" id="camera" accept="image/*" capture="environment" hidden>
+      <ul class="file-list" id="fileList"></ul>
+    </section>
+
+    <section class="panel tools" aria-labelledby="toolsTitle">
+      <div class="panel-head"><h2 id="toolsTitle">Tools</h2><span class="hint" id="toolHint">Add files to see what fits</span></div>
+      <input type="search" class="search" id="toolSearch" placeholder="Search tools — e.g. merge, sign, mp3, compress" aria-label="Search tools">
+      <div id="toolGroups"></div>
+      <button type="button" class="ghost show-all" id="showAll" hidden></button>
+      <form class="options" id="options" hidden>
+        <div class="options-head">
+          <div>
+            <h3 id="optTitle"></h3>
+            <p id="optDesc"></p>
+          </div>
+          <button type="button" class="ghost" id="optClose" aria-label="Close tool">✕</button>
+        </div>
+        <div class="fields" id="fields"></div>
+        <div class="pe" id="editorHost" hidden></div>
+        <div class="run-row">
+          <span class="hint" id="runHint"></span>
+          <button type="submit" class="primary" id="runBtn">Run</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="panel results" aria-labelledby="resultsTitle">
+      <div class="panel-head">
+        <h2 id="resultsTitle">Results <span class="count" id="resultCount">0</span></h2>
+        <div class="row">
+          <button class="primary small" id="zipAllBtn" hidden>Download all (.zip)</button>
+          <button class="ghost" id="clearResultsBtn" hidden>Clear</button>
+        </div>
+      </div>
+      <div class="progress-row" id="progress" hidden>
+        <div class="progress"><div class="bar" id="bar"></div><span id="progressText"></span></div>
+        <button class="ghost" id="cancelBtn">Cancel</button>
+      </div>
+      <p class="empty" id="resultsEmpty">Converted files appear here. Your originals are never changed.</p>
+      <ul class="result-list" id="resultList"></ul>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <span>🔒 100% local · works offline once loaded · no account, no limits</span>
+    <span>Tiger 1.2</span>
+  </footer>
+
+  <div class="drag-veil" id="veil" hidden><div>Drop to add files</div></div>
+
+  <div class="wheel-wrap" id="wheelWrap" hidden>
+    <div class="wheel" id="wheel" role="menu" aria-label="Quick actions">
+      <div class="wheel-center" id="wheelCenter"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="vendor/pdf-lib.min.js"></script>
+  <script src="vendor/jszip.min.js"></script>
+  <script src="vendor/pdf.min.js"></script>
+  <script src="vendor/ffmpeg/ffmpeg.js"></script>
+  <script src="tools.js"></script>
+  <script src="editor.js"></script>
+  <script src="pdftools.js"></script>
+  <script src="media.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

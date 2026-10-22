@@ -1,0 +1,5 @@
+# Unused multi-threaded FFmpeg build (kept locally only)
+vendor/ffmpeg-mt/
+*.log
+Thumbs.db
+desktop.ini
