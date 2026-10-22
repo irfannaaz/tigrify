@@ -270,5 +270,7 @@
   // The new PDF tools go right after the existing PDF group.
   const after = TOOLS.findIndex((t) => t.group === 'Text & data');
   TOOLS.splice(after, 0, ...PDF_TOOLS);
+  // Page-rendering tools use a lot of memory, so they handle one file at a time (matters on phones).
+  TOOLS.filter((t) => ['compress-pdf', 'unlock-pdf', 'repair-pdf', 'pdf-to-images'].includes(t.id)).forEach((t) => { t.parallel = false; });
   window.Tigrify.trimCanvas = trimCanvas;
 })();

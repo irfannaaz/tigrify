@@ -36,10 +36,20 @@
     if (!incoming.length) return false;
     const room = 500 - state.files.length;
     if (incoming.length > room) toast(`Only the first ${room} files were added (limit 500).`);
+    const { is } = window.Tigrify;
     for (const file of incoming.slice(0, room)) {
-      const isImg = window.Tigrify.is.image(file);
-      state.files.push({ id: nextId++, file, url: isImg ? URL.createObjectURL(file) : null });
+      const entry = { id: nextId++, file, url: is.image(file) && !is.heic(file) ? URL.createObjectURL(file) : null };
+      state.files.push(entry);
+      // HEIC previews are decoded in the background, then the list refreshes.
+      if (is.heic(file)) {
+        window.Tigrify.img.thumbUrl(file, 96).then((url) => {
+          if (state.files.includes(entry)) { entry.url = url; renderFiles(); } else URL.revokeObjectURL(url);
+        }).catch(() => {});
+      }
     }
+    // Start loading heavy engines right away so the first conversion feels instant.
+    if (incoming.some(is.heic)) window.Tigrify.img.loadHeic().catch(() => {});
+    if (incoming.some(is.media) && window.Tigrify.media) window.Tigrify.media.warm();
     renderFiles();
     renderTools();
     return true;
@@ -272,14 +282,19 @@
     setBusy(true);
     const before = state.results.length;
     const jobs = tool.mode === 'all' ? [files] : files.map((f) => [f]);
-    for (let i = 0; i < jobs.length && !signal.aborted; i++) {
+    // Several files are processed at once, except for tools that share one engine (video/audio).
+    const workers = tool.mode === 'all' || tool.parallel === false ? 1
+      : Math.min(jobs.length, 4, Math.max(2, (navigator.hardwareConcurrency || 4) >> 1));
+    let next = 0;
+    let done = 0;
+    const runJob = async (i) => {
       const label = `${tool.name} · ${tool.mode === 'all' ? `${files.length} files` : jobs[i][0].name}`;
-      progress(i, jobs.length, label);
+      if (workers === 1) progress(i, jobs.length, label);
       // Lets long-running tools (video) report status and progress within the current file.
       const ctx = {
         signal,
-        status: (s) => progress(i, jobs.length, `${label} · ${s}`),
-        fraction: (p) => progress(i + p, jobs.length, `${label} · ${Math.round(p * 100)}%`),
+        status: (s) => { if (workers === 1) progress(i, jobs.length, `${label} · ${s}`); },
+        fraction: (p) => { if (workers === 1) progress(i + p, jobs.length, `${label} · ${Math.round(p * 100)}%`); },
       };
       await new Promise((r) => setTimeout(r, 0));
       try {
@@ -290,7 +305,13 @@
         const msg = signal.aborted ? 'Cancelled.' : e instanceof ToolError ? e.message : `Failed: ${e && e.message ? e.message : e}`;
         addResult({ name: tool.mode === 'all' ? tool.name : jobs[i][0].name, error: msg });
       }
-    }
+      done++;
+      if (workers > 1) progress(done, jobs.length, `${tool.name} · ${done} of ${jobs.length} done`);
+    };
+    if (workers > 1) progress(0, jobs.length, `${tool.name} · starting`);
+    await Promise.all(Array.from({ length: workers }, async () => {
+      while (next < jobs.length && !signal.aborted) await runJob(next++);
+    }));
     progress(jobs.length, jobs.length, signal.aborted ? 'Cancelled' : 'Done');
     state.busy = false;
     state.abort = null;
@@ -388,10 +409,13 @@
 
   /* ---------- quick wheel ---------- */
   function wheelItems() {
-    return WHEEL.map((w) => ({ ...w, t: TOOLS.find((t) => t.id === w.tool) }))
+    const items = WHEEL.map((w) => ({ ...w, t: TOOLS.find((t) => t.id === w.tool) }))
       .map((w) => ({ ...w, n: compatible(w.t).length }))
-      .filter((w) => w.n >= (w.min || 1))
-      .slice(0, 8);
+      .filter((w) => w.n >= (w.min || 1));
+    // Presets sharing a label (e.g. "JPG" for HEIC and for other images): keep the one covering most files.
+    const best = new Map();
+    for (const w of items) if (!best.has(w.label) || w.n > best.get(w.label).n) best.set(w.label, w);
+    return items.filter((w) => best.get(w.label) === w).slice(0, 8);
   }
 
   function openWheel() {

@@ -1,13 +1,13 @@
 /* Tigrify service worker: makes Tigrify installable and usable offline. */
-const VERSION = 'tigrify-1.2.0';
+const VERSION = 'tigrify-1.3.0';
 const SHELL = [
   './', 'index.html', 'styles.css', 'app.js', 'tools.js', 'editor.js', 'pdftools.js', 'media.js', 'manifest.json',
   'assets/logo.svg', 'assets/icon-192.png', 'assets/icon-512.png',
   'vendor/pdf-lib.min.js', 'vendor/jszip.min.js', 'vendor/pdf.min.js', 'vendor/pdf.worker.min.js',
   'vendor/ffmpeg/ffmpeg.js', 'vendor/ffmpeg/814.ffmpeg.js',
 ];
-// The 32 MB video engine is cached the first time a video/audio tool is used, not on install.
-const LAZY = /vendor\/ffmpeg\/ffmpeg-core\.(js|wasm)$/;
+// The 32 MB video engine and the 3 MB HEIC decoder are cached the first time they're needed, not on install.
+const LAZY = /vendor\/(ffmpeg\/ffmpeg-core\.(js|wasm)|heic-to\.js)$/;
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(VERSION).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));

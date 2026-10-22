@@ -29,7 +29,7 @@
     }
     if (!window.FFmpegWASM) return Promise.reject(new ToolError('The video engine files are missing from the vendor folder.'));
     if (!loading) {
-      ctx.status('Loading video engine (first time only)…');
+      if (ctx) ctx.status('Loading video engine (first time only)…');
       const ff = new FFmpegWASM.FFmpeg();
       const dir = new URL('vendor/ffmpeg/', location.href).href;
       loading = ff.load({ coreURL: dir + 'ffmpeg-core.js', wasmURL: dir + 'ffmpeg-core.wasm' })
@@ -307,5 +307,11 @@
     { label: 'WebM', tool: 'convert-video', opts: { format: 'webm' } },
     { label: 'Volume', tool: 'normalize-audio' });
 
-  window.Tigrify.media = { killEngine };
+  // One FFmpeg engine handles one job at a time.
+  MEDIA_TOOLS.forEach((t) => { t.parallel = false; });
+
+  // Starts loading the engine as soon as media files are added, so the first job starts quickly.
+  const warm = () => { if (location.protocol !== 'file:') getEngine(null).catch(() => {}); };
+
+  window.Tigrify.media = { killEngine, warm };
 })();

@@ -50,7 +50,7 @@
 
   function imageThumb(file) {
     const key = `${fileId(file)}:img`;
-    if (!thumbCache.has(key)) thumbCache.set(key, Promise.resolve(URL.createObjectURL(file)));
+    if (!thumbCache.has(key)) thumbCache.set(key, is.heic(file) ? window.Tigrify.img.thumbUrl(file) : Promise.resolve(URL.createObjectURL(file)));
     return thumbCache.get(key);
   }
 
@@ -187,7 +187,7 @@
       if (e === 'png') { const r = await doc.embedPng(bytes).catch(() => null); if (r) return r; }
     }
     const src = await decodeImage(file);
-    const photo = e === 'jpg' || e === 'jpeg';
+    const photo = e === 'jpg' || e === 'jpeg' || is.heic(file);
     const blob = await encode(render(src, { rotate: rotation, background: photo ? '#fff' : null }), photo ? 'jpeg' : 'png', 92);
     if (src.close) src.close();
     const bytes = await blob.arrayBuffer();

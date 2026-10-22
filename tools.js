@@ -4,11 +4,12 @@
 
   const ext = (name) => (name.includes('.') ? name.split('.').pop() : '').toLowerCase();
   const base = (name) => name.replace(/\.[^.]+$/, '') || name;
-  const IMAGE_EXTS = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'bmp', 'avif', 'svg', 'ico'];
+  const IMAGE_EXTS = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'bmp', 'avif', 'svg', 'ico', 'heic', 'heif'];
   const MAX_PIXELS = 50e6;
 
   const is = {
     image: (f) => f.type.startsWith('image/') || IMAGE_EXTS.includes(ext(f.name)),
+    heic: (f) => ['heic', 'heif'].includes(ext(f.name)) || /^image\/hei[cf]/.test(f.type),
     pdf: (f) => f.type === 'application/pdf' || ext(f.name) === 'pdf',
     srt: (f) => ext(f.name) === 'srt',
     vtt: (f) => ext(f.name) === 'vtt',
@@ -23,7 +24,36 @@
 
   /* ---------- image helpers ---------- */
 
+  // The HEIC decoder (3 MB) is only downloaded when the first HEIC file shows up.
+  let heicLoader = null;
+  function loadHeic() {
+    if (window.HeicTo) return Promise.resolve(window.HeicTo);
+    if (!heicLoader) {
+      heicLoader = new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = 'vendor/heic-to.js';
+        s.onload = () => (window.HeicTo ? resolve(window.HeicTo) : reject(new Error('missing')));
+        s.onerror = reject;
+        document.head.append(s);
+      }).catch(() => {
+        heicLoader = null;
+        throw new ToolError('The HEIC decoder could not be loaded — check your connection and try again.');
+      });
+    }
+    return heicLoader;
+  }
+
   async function decodeImage(file) {
+    if (is.heic(file)) {
+      // Safari decodes HEIC natively; everywhere else uses the bundled decoder.
+      try { return await createImageBitmap(file, { imageOrientation: 'from-image' }); } catch (_) { /* not native */ }
+      const heicTo = await loadHeic();
+      try {
+        return await heicTo({ blob: file, type: 'bitmap', options: { imageOrientation: 'from-image' } });
+      } catch (_) {
+        throw new ToolError('This HEIC photo could not be decoded (it may be damaged or a format variant that isn\'t supported).');
+      }
+    }
     if (!(ext(file.name) === 'svg' || file.type === 'image/svg+xml')) {
       try {
         return await createImageBitmap(file, { imageOrientation: 'from-image' });
@@ -98,7 +128,17 @@
     const e = ext(file.name);
     if (e === 'jpg' || e === 'jpeg') return 'jpeg';
     if (e === 'webp' || e === 'bmp' || e === 'png') return e;
+    if (is.heic(file)) return 'jpeg';
     return 'png';
+  }
+
+  // Small preview for images the browser can't show directly in an <img> (HEIC outside Safari).
+  async function thumbUrl(file, size = 220) {
+    const src = await decodeImage(file);
+    const k = Math.min(1, size / Math.max(src.width, src.height));
+    const c = render(src, { width: src.width * k, height: src.height * k, background: '#fff' });
+    if (src.close) src.close();
+    return URL.createObjectURL(await encode(c, 'jpeg', 80));
   }
 
   async function encode(canvas, format, quality = 90) {
@@ -222,8 +262,18 @@
   const TOOLS = [
     // Images
     {
+      id: 'heic-to-jpg', group: 'Images', name: 'HEIC → JPG', icon: '📱',
+      desc: 'Turn iPhone photos (HEIC/HEIF) into JPGs that open everywhere. Keeps full resolution and the right orientation.',
+      accepts: is.heic, mode: 'each',
+      options: [
+        { key: 'format', label: 'Output format', type: 'select', default: 'jpeg', choices: [['jpeg', 'JPG (works everywhere)'], ['png', 'PNG (lossless, bigger)'], ['webp', 'WebP (smallest)']] },
+        { ...qualityOption(92), show: (o) => o.format !== 'png' },
+      ],
+      run: (f, o) => imageJob(f, o.format, o.quality, () => ({}), ''),
+    },
+    {
       id: 'convert-image', group: 'Images', name: 'Convert image', icon: '⇄',
-      desc: 'PNG, JPEG, WebP or BMP from PNG, JPEG, WebP, GIF, BMP, AVIF, SVG or ICO.',
+      desc: 'PNG, JPEG, WebP or BMP from PNG, JPEG, WebP, GIF, BMP, AVIF, SVG, ICO or HEIC.',
       accepts: is.image, mode: 'each',
       options: [imageFormatOption(false), qualityOption(), { key: 'maxSide', label: 'Max side (px, 0 = keep)', type: 'number', min: 0, max: 20000, default: 0 }],
       run: (f, o) => imageJob(f, o.format, o.quality, (s) => fitMaxSide(s, +o.maxSide), ''),
@@ -556,6 +606,7 @@
 
   // Quick-wheel presets: one-click actions that run a tool with fixed options.
   const WHEEL = [
+    { label: 'JPG', tool: 'heic-to-jpg', opts: { format: 'jpeg' } },
     { label: 'PNG', tool: 'convert-image', opts: { format: 'png' } },
     { label: 'JPG', tool: 'convert-image', opts: { format: 'jpeg' } },
     { label: 'WebP', tool: 'convert-image', opts: { format: 'webp' } },
@@ -578,7 +629,7 @@
   window.Tigrify = {
     TOOLS, WHEEL, ToolError, ext, base, is,
     // Shared helpers for tools defined in other files.
-    img: { decodeImage, render, encode, MAX_PIXELS },
+    img: { decodeImage, render, encode, thumbUrl, loadHeic, MAX_PIXELS },
     pdf: { loadPdf, loadPdfJs, savePdf, parseRange },
     textBlob,
   };

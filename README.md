@@ -6,12 +6,12 @@ Tigrify does what iLovePDF-style websites do, but **everything happens on your o
 
 **Use it:** open the link above, or run it locally (see below). It works in Edge or Chrome on Windows, Mac, Linux, Android and iPhone.
 
-## 36 tools
+## 37 tools
 
 | Group | Tools |
 |---|---|
 | **PDF** | Merge, Split, Pick pages, Rotate, Add page numbers, PDF → images, Extract text, **Organize PDF** (visual: rotate, reorder, delete, mix PDFs and images), **Sign**, **Watermark**, **Crop**, **Compress**, **Unlock**, **Repair**, **PDF → Word** |
-| **Images** | Convert (PNG/JPEG/WebP/BMP from PNG, JPEG, WebP, GIF, BMP, AVIF, SVG, ICO), Resize, Rotate & flip, Compress, **Images → PDF** (visual page editor) |
+| **Images** | **HEIC → JPG** (iPhone photos), Convert (PNG/JPEG/WebP/BMP from PNG, JPEG, WebP, GIF, BMP, AVIF, SVG, ICO, HEIC), Resize, Rotate & flip, Compress, **Images → PDF** (visual page editor). HEIC photos work in every image tool. |
 | **Video & audio** | Convert video (MP4/WebM/MOV/MKV), Convert audio (MP3/WAV/M4A/OGG/Opus/FLAC; can pull the sound out of a video), Trim, Compress video, Video → GIF, Remove audio, Fix volume, Grab a frame |
 | **Text & data** | SRT ↔ VTT, Shift subtitles, CSV ↔ JSON |
 | **Any file** | Make ZIP, Unzip, Checksum (SHA-256/1/512) |
@@ -45,6 +45,7 @@ In this repository, go to Settings → Pages → Source: *Deploy from a branch* 
 - **Phones** handle PDFs and images well. Large videos can run out of memory on phones.
 - **Compress PDF** and **Unlock PDF** rebuild pages as images, so text in the result can't be selected anymore.
 - **PDF → Word** gives you the text, but not the layout or pictures.
+- Batches of images and PDFs are processed several files at a time (about 3× faster). Video and audio go one at a time.
 - Limits: 50-megapixel images, PDFs up to 400 pages in the editor, media files up to 2 GB.
 
 ## Project layout
@@ -57,7 +58,7 @@ In this repository, go to Settings → Pages → Source: *Deploy from a branch* 
 - `media.js`: the video and audio tools (FFmpeg.wasm)
 - `sw.js` and `manifest.json`: offline cache and app install
 - `Start Tigrify.cmd` and `server.ps1`: the Windows launcher, a read-only server on localhost only
-- `vendor/`: pdf-lib (MIT), pdf.js (Apache-2.0), JSZip (MIT), FFmpeg.wasm (MIT wrapper, GPL core)
+- `vendor/`: pdf-lib (MIT), pdf.js (Apache-2.0), JSZip (MIT), FFmpeg.wasm (MIT wrapper, GPL core), heic-to 1.5.2 (LGPL-3.0, libheif)
 
 To add a tool, push an entry with `accepts`, `mode` (`each`/`all`), `options` and `run(file, options, ctx)` into `Tigrify.TOOLS`.
 
