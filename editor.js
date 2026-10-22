@@ -1,9 +1,9 @@
-/* Tiger — visual page editor: thumbnails you can rotate, reorder (drag or arrows) and delete. */
+/* Tigrify — visual page editor: thumbnails you can rotate, reorder (drag or arrows) and delete. */
 (function () {
   'use strict';
-  const { is, ext, ToolError } = window.Tiger;
-  const { decodeImage, render, encode } = window.Tiger.img;
-  const { loadPdf, loadPdfJs, savePdf } = window.Tiger.pdf;
+  const { is, ext, ToolError } = window.Tigrify;
+  const { decodeImage, render, encode } = window.Tigrify.img;
+  const { loadPdf, loadPdfJs, savePdf } = window.Tigrify.pdf;
   const MAX_PAGES = 400;
 
   const el = (tag, cls, text) => {
@@ -231,5 +231,5 @@
     return /\.pdf$/i.test(n) ? n : `${n}.pdf`;
   };
 
-  window.Tiger.editor = { mount, itemsFor, buildPdf, pdfName, savePdf };
+  window.Tigrify.editor = { mount, itemsFor, buildPdf, pdfName, savePdf };
 })();

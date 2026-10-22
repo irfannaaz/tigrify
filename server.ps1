@@ -1,5 +1,5 @@
-# Tiger local server: serves this folder on http://localhost only, read-only.
-# Quits by itself a few minutes after the last Tiger tab is closed.
+# Tigrify local server: serves this folder on http://localhost only, read-only.
+# Quits by itself a few minutes after the last Tigrify tab is closed.
 param([int]$Port = 47123)
 
 $root = [IO.Path]::GetFullPath($PSScriptRoot).TrimEnd('\') + '\'

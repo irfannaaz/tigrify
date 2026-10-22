@@ -1,9 +1,9 @@
-/* Tiger — more PDF tools: organize, sign, watermark, crop, compress, unlock, repair, PDF → Word. */
+/* Tigrify — more PDF tools: organize, sign, watermark, crop, compress, unlock, repair, PDF → Word. */
 (function () {
   'use strict';
-  const { TOOLS, ToolError, base, is } = window.Tiger;
-  const { encode } = window.Tiger.img;
-  const { loadPdf, loadPdfJs, savePdf, parseRange } = window.Tiger.pdf;
+  const { TOOLS, ToolError, base, is } = window.Tigrify;
+  const { encode } = window.Tigrify.img;
+  const { loadPdf, loadPdfJs, savePdf, parseRange } = window.Tigrify.pdf;
 
   const MM = 72 / 25.4;
   const pdfOrImage = (f) => is.pdf(f) || is.image(f);
@@ -89,7 +89,7 @@
         { key: 'name', label: 'File name', type: 'text', default: 'organized.pdf' },
       ],
       run: async (files, o, ctx) => {
-        const { buildPdf, itemsFor, pdfName } = window.Tiger.editor;
+        const { buildPdf, itemsFor, pdfName } = window.Tigrify.editor;
         const items = o.__items || await itemsFor(files);
         return [await savePdf(await buildPdf(items, { ...o, orientation: 'auto', margin: 0 }, ctx), pdfName(o.name, 'organized'))];
       },
@@ -270,5 +270,5 @@
   // The new PDF tools go right after the existing PDF group.
   const after = TOOLS.findIndex((t) => t.group === 'Text & data');
   TOOLS.splice(after, 0, ...PDF_TOOLS);
-  window.Tiger.trimCanvas = trimCanvas;
+  window.Tigrify.trimCanvas = trimCanvas;
 })();

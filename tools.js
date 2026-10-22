@@ -1,4 +1,4 @@
-/* Tiger — tool registry. Every tool runs entirely in the browser; files never leave the device. */
+/* Tigrify — tool registry. Every tool runs entirely in the browser; files never leave the device. */
 (function () {
   'use strict';
 
@@ -283,7 +283,7 @@
         { key: 'name', label: 'File name', type: 'text', default: 'images.pdf' },
       ],
       run: async (files, o, ctx) => {
-        const { buildPdf, pdfName } = window.Tiger.editor;
+        const { buildPdf, pdfName } = window.Tigrify.editor;
         const items = o.__items || files.map((file) => ({ file, kind: 'image', page: 0, rotation: 0 }));
         return [await savePdf(await buildPdf(items, o, ctx), pdfName(o.name, 'images'))];
       },
@@ -575,7 +575,7 @@
     { label: 'SHA-256', tool: 'checksum' },
   ];
 
-  window.Tiger = {
+  window.Tigrify = {
     TOOLS, WHEEL, ToolError, ext, base, is,
     // Shared helpers for tools defined in other files.
     img: { decodeImage, render, encode, MAX_PIXELS },

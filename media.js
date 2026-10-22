@@ -1,14 +1,14 @@
-/* Tiger — video & audio tools, powered by FFmpeg compiled to WebAssembly (runs locally in a worker). */
+/* Tigrify — video & audio tools, powered by FFmpeg compiled to WebAssembly (runs locally in a worker). */
 (function () {
   'use strict';
-  const { TOOLS, WHEEL, ToolError, ext, base } = window.Tiger;
+  const { TOOLS, WHEEL, ToolError, ext, base } = window.Tigrify;
 
   const VIDEO_EXTS = ['mp4', 'mov', 'm4v', 'mkv', 'webm', 'avi', 'wmv', 'flv', 'mpg', 'mpeg', '3gp', 'ts', 'mts', 'm2ts', 'ogv'];
   const AUDIO_EXTS = ['mp3', 'wav', 'm4a', 'aac', 'flac', 'ogg', 'oga', 'opus', 'wma', 'aiff', 'aif', 'amr', 'weba'];
   const isVideo = (f) => VIDEO_EXTS.includes(ext(f.name)) || (f.type.startsWith('video/') && !AUDIO_EXTS.includes(ext(f.name)));
   const isAudio = (f) => AUDIO_EXTS.includes(ext(f.name)) || (f.type.startsWith('audio/') && !VIDEO_EXTS.includes(ext(f.name)));
   const isMedia = (f) => isVideo(f) || isAudio(f);
-  Object.assign(window.Tiger.is, { video: isVideo, audio: isAudio, media: isMedia });
+  Object.assign(window.Tigrify.is, { video: isVideo, audio: isAudio, media: isMedia });
 
   const MAX_INPUT = 2 * 1024 ** 3;
   const MIME = {
@@ -25,7 +25,7 @@
   function getEngine(ctx) {
     if (engine) return Promise.resolve(engine);
     if (location.protocol === 'file:') {
-      return Promise.reject(new ToolError('Video & audio tools need Tiger opened with "Start Tiger.cmd" (browsers block them on pages opened straight from disk).'));
+      return Promise.reject(new ToolError('Video & audio tools need Tigrify opened with "Start Tigrify.cmd" (browsers block them on pages opened straight from disk).'));
     }
     if (!window.FFmpegWASM) return Promise.reject(new ToolError('The video engine files are missing from the vendor folder.'));
     if (!loading) {
@@ -307,5 +307,5 @@
     { label: 'WebM', tool: 'convert-video', opts: { format: 'webm' } },
     { label: 'Volume', tool: 'normalize-audio' });
 
-  window.Tiger.media = { killEngine };
+  window.Tigrify.media = { killEngine };
 })();

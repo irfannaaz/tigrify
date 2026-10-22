@@ -1,5 +1,5 @@
-/* Tiger service worker: makes Tiger installable and usable offline. */
-const VERSION = 'tiger-1.2.0';
+/* Tigrify service worker: makes Tigrify installable and usable offline. */
+const VERSION = 'tigrify-1.2.0';
 const SHELL = [
   './', 'index.html', 'styles.css', 'app.js', 'tools.js', 'editor.js', 'pdftools.js', 'media.js', 'manifest.json',
   'assets/logo.svg', 'assets/icon-192.png', 'assets/icon-512.png',
@@ -15,7 +15,8 @@ self.addEventListener('install', (e) => {
 
 self.addEventListener('activate', (e) => {
   e.waitUntil(caches.keys()
-    .then((keys) => Promise.all(keys.filter((k) => k.startsWith('tiger-') && k !== VERSION && k !== 'tiger-engine').map((k) => caches.delete(k))))
+    // Also removes caches left by the app's earlier name ("tiger-…").
+    .then((keys) => Promise.all(keys.filter((k) => (k.startsWith('tigrify-') && k !== VERSION && k !== 'tigrify-engine') || k.startsWith('tiger-')).map((k) => caches.delete(k))))
     .then(() => self.clients.claim()));
 });
 
@@ -25,7 +26,7 @@ self.addEventListener('fetch', (e) => {
 
   if (LAZY.test(url.pathname)) {
     // Cache first: the engine never changes within a version.
-    e.respondWith(caches.open('tiger-engine').then(async (c) => {
+    e.respondWith(caches.open('tigrify-engine').then(async (c) => {
       const hit = await c.match(e.request);
       if (hit) return hit;
       const res = await fetch(e.request);

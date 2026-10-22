@@ -1,6 +1,6 @@
 {
-  "name": "Tiger — private file converter",
-  "short_name": "Tiger",
+  "name": "Tigrify — private file converter",
+  "short_name": "Tigrify",
   "description": "Convert, merge, sign and edit PDFs, images, video and audio right on your device. Nothing is uploaded.",
   "start_url": "./",
   "scope": "./",

@@ -1,7 +1,7 @@
-/* Tiger — interface: file list, tool picker, quick wheel and results. */
+/* Tigrify — interface: file list, tool picker, quick wheel and results. */
 (function () {
   'use strict';
-  const { TOOLS, WHEEL, ToolError, ext } = window.Tiger;
+  const { TOOLS, WHEEL, ToolError, ext } = window.Tigrify;
   const $ = (id) => document.getElementById(id);
   const el = (tag, cls, text) => {
     const n = document.createElement(tag);
@@ -11,8 +11,8 @@
   };
   const fmtSize = (b) => (b < 1024 ? `${b} B` : b < 1048576 ? `${(b / 1024).toFixed(1)} KB` : `${(b / 1048576).toFixed(1)} MB`);
   const store = {
-    get: (k, d) => { try { const v = localStorage.getItem('tiger.' + k); return v == null ? d : JSON.parse(v); } catch (_) { return d; } },
-    set: (k, v) => { try { localStorage.setItem('tiger.' + k, JSON.stringify(v)); } catch (_) { /* storage unavailable */ } },
+    get: (k, d) => { try { const v = localStorage.getItem('tigrify.' + k); return v == null ? d : JSON.parse(v); } catch (_) { return d; } },
+    set: (k, v) => { try { localStorage.setItem('tigrify.' + k, JSON.stringify(v)); } catch (_) { /* storage unavailable */ } },
   };
 
   if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'vendor/pdf.worker.min.js';
@@ -37,7 +37,7 @@
     const room = 500 - state.files.length;
     if (incoming.length > room) toast(`Only the first ${room} files were added (limit 500).`);
     for (const file of incoming.slice(0, room)) {
-      const isImg = window.Tiger.is.image(file);
+      const isImg = window.Tigrify.is.image(file);
       state.files.push({ id: nextId++, file, url: isImg ? URL.createObjectURL(file) : null });
     }
     renderFiles();
@@ -190,7 +190,7 @@
     if (!tool.options.length) fields.append(el('p', 'hint', 'No settings needed — just run it.'));
     const host = $('editorHost');
     host.hidden = !tool.editor;
-    state.editor = tool.editor ? window.Tiger.editor.mount(host) : null;
+    state.editor = tool.editor ? window.Tigrify.editor.mount(host) : null;
     if (!tool.editor) host.replaceChildren();
     $('options').hidden = false;
     refreshVisibility();
@@ -219,7 +219,7 @@
     wrap.append(head, pad);
     wrap.read = () => {
       if (!wrap.dataset.dirty) return '';
-      const trimmed = window.Tiger.trimCanvas(pad);
+      const trimmed = window.Tigrify.trimCanvas(pad);
       return trimmed ? trimmed.toDataURL('image/png') : '';
     };
     return wrap;
@@ -379,7 +379,7 @@
     const blob = await z.generateAsync({ type: 'blob', compression: 'DEFLATE' });
     const a = el('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'tiger-results.zip';
+    a.download = 'tigrify-results.zip';
     document.body.append(a);
     a.click();
     a.remove();
@@ -472,9 +472,9 @@
   $('cancelBtn').onclick = () => { if (state.abort) state.abort.abort(); };
 
   if (location.protocol.startsWith('http')) {
-    // Installable app + offline use (GitHub Pages, or localhost via Start Tiger.cmd).
+    // Installable app + offline use (GitHub Pages, or localhost via Start Tigrify.cmd).
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
-    // Keeps the local server (Start Tiger.cmd) alive while a Tiger tab is open.
+    // Keeps the local server (Start Tigrify.cmd) alive while a Tigrify tab is open.
     if (location.hostname === 'localhost') setInterval(() => fetch('__ping', { cache: 'no-store' }).catch(() => {}), 30000);
   }
   $('clearResultsBtn').onclick = () => {
@@ -507,7 +507,7 @@
   });
 
   if (location.protocol === 'file:') {
-    toast('Tip: open Tiger with "Start Tiger.cmd" to enable the video & audio tools.');
+    toast('Tip: open Tigrify with "Start Tigrify.cmd" to enable the video & audio tools.');
   }
 
   renderFiles();
